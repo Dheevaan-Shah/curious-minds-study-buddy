@@ -69,7 +69,7 @@ export function LearnPanel({ setup, onQuizMe }: { setup: StudySetup; onQuizMe: (
             ))}
           </div>
 
-          <div className="rounded-md bg-muted p-4">
+          <div className="rounded-md bg-tint-soft p-4">
             <div className="label-mono mb-1">Think of it like this</div>
             <p className="leading-relaxed">{result.analogy}</p>
           </div>
@@ -79,7 +79,7 @@ export function LearnPanel({ setup, onQuizMe }: { setup: StudySetup; onQuizMe: (
             <ul className="space-y-2">
               {result.keyPoints.map((k, i) => (
                 <li key={i} className="flex gap-3">
-                  <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-sm bg-ink font-mono text-[0.65rem] text-primary-foreground">
+                  <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-sm bg-tint font-mono text-[0.65rem] text-primary-foreground">
                     {i + 1}
                   </span>
                   <span>{k}</span>
@@ -96,7 +96,7 @@ export function LearnPanel({ setup, onQuizMe }: { setup: StudySetup; onQuizMe: (
             </pre>
           </div>
 
-          <div className="border-l-[3px] border-ink pl-4">
+          <div className="border-l-[3px] border-tint pl-4">
             <div className="label-mono mb-1">Watch out</div>
             <p>{result.commonMistake}</p>
           </div>

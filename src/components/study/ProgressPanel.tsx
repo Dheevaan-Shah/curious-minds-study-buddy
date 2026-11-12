@@ -54,13 +54,13 @@ export function ProgressPanel({
         {SUBJECTS.map((s) => {
           const pct = bySubject[s.value];
           return (
-            <div key={s.value}>
+            <div key={s.value} data-subject={s.value}>
               <div className="flex justify-between text-sm">
                 <span className="font-medium">{s.label}</span>
                 <span className="font-mono text-muted-foreground">{pct === undefined ? "—" : `${pct}%`}</span>
               </div>
               <div className="mt-1 h-2 rounded-full bg-muted">
-                <div className="h-2 rounded-full bg-ink transition-all" style={{ width: `${pct ?? 0}%` }} />
+                <div className="h-2 rounded-full bg-tint transition-all" style={{ width: `${pct ?? 0}%` }} />
               </div>
             </div>
           );

@@ -77,6 +77,12 @@
   --color-paper: var(--paper);
   --color-grid: var(--grid);
   --shadow-ink: var(--shadow-ink-value);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-tint: var(--tint);
+  --color-tint-soft: var(--tint-soft);
   --shadow-ink-sm: var(--shadow-ink-sm-value);
 }
 
@@ -120,7 +126,25 @@
   --sidebar-ring: var(--ink);
   --shadow-ink-value: 4px 4px 0 0 var(--ink);
   --shadow-ink-sm-value: 2px 2px 0 0 var(--ink);
+  /* Answer feedback: clear but calm */
+  --success: oklch(0.58 0.13 152);
+  --success-soft: oklch(0.95 0.04 152);
+  --danger: oklch(0.57 0.16 25);
+  --danger-soft: oklch(0.95 0.035 25);
+  /* Soft subject tints */
+  --maths: oklch(0.58 0.09 255);
+  --maths-soft: oklch(0.95 0.022 255);
+  --science: oklch(0.58 0.08 170);
+  --science-soft: oklch(0.95 0.025 170);
+  --cs: oklch(0.64 0.1 65);
+  --cs-soft: oklch(0.955 0.03 75);
+  --tint: var(--ink);
+  --tint-soft: var(--muted);
 }
+
+[data-subject="math"] { --tint: var(--maths); --tint-soft: var(--maths-soft); }
+[data-subject="science"] { --tint: var(--science); --tint-soft: var(--science-soft); }
+[data-subject="cs"] { --tint: var(--cs); --tint-soft: var(--cs-soft); }
 
 @layer base {
   * {
@@ -204,9 +228,10 @@
   background-color: var(--card);
   color: var(--ink);
   cursor: pointer;
-  transition: border-color 120ms, background-color 120ms;
+  transition: border-color 120ms, background-color 160ms, transform 120ms;
   &:hover:not(:disabled) {
     border-color: var(--ink);
+    transform: translateX(2px);
   }
   &:disabled {
     cursor: default;
@@ -216,19 +241,107 @@
     box-shadow: var(--shadow-ink-sm-value);
   }
   &[data-state="correct"] {
-    background-color: var(--ink);
-    border-color: var(--ink);
-    color: var(--primary-foreground);
+    background-color: var(--success-soft);
+    border-color: var(--success);
+    color: var(--ink);
+    animation: answer-pop 650ms ease-out;
+  }
+  &[data-state="reveal"] {
+    background-color: var(--success-soft);
+    border-color: var(--success);
+    border-style: dashed;
   }
   &[data-state="wrong"] {
-    border-style: dashed;
-    border-color: var(--muted-foreground);
-    color: var(--muted-foreground);
-    text-decoration: line-through;
+    background-color: var(--danger-soft);
+    border-color: var(--danger);
+    color: var(--ink);
+    animation: answer-shake 420ms ease-in-out;
   }
   &[data-state="muted"] {
-    opacity: 0.55;
+    opacity: 0.5;
   }
+}
+
+@keyframes answer-pop {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 color-mix(in oklab, var(--success) 55%, transparent); background-color: color-mix(in oklab, var(--success) 35%, var(--card)); }
+  35% { transform: scale(1.02); }
+  100% { transform: scale(1); box-shadow: 0 0 0 12px transparent; }
+}
+
+@keyframes answer-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); background-color: color-mix(in oklab, var(--danger) 30%, var(--card)); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(3px); }
+}
+
+/* Whole-card flash after checking an answer */
+@keyframes flash-success {
+  0% { box-shadow: var(--shadow-ink-value), 0 0 0 0 color-mix(in oklab, var(--success) 45%, transparent); }
+  100% { box-shadow: var(--shadow-ink-value), 0 0 0 18px transparent; }
+}
+@keyframes flash-danger {
+  0% { box-shadow: var(--shadow-ink-value), 0 0 0 0 color-mix(in oklab, var(--danger) 40%, transparent); }
+  100% { box-shadow: var(--shadow-ink-value), 0 0 0 18px transparent; }
+}
+@utility flash-success {
+  animation: flash-success 700ms ease-out;
+}
+@utility flash-danger {
+  animation: flash-danger 700ms ease-out;
+}
+
+/* Big selectable tile used in the setup steps */
+@utility tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  width: 100%;
+  text-align: left;
+  padding: 1.25rem;
+  border: 1.5px solid var(--ink);
+  border-radius: calc(var(--radius) + 4px);
+  background-color: var(--card);
+  color: var(--ink);
+  box-shadow: var(--shadow-ink-sm-value);
+  cursor: pointer;
+  transition: transform 140ms ease, box-shadow 140ms ease, background-color 160ms;
+  &:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: var(--shadow-ink-value);
+    background-color: var(--tint-soft);
+  }
+  &:active {
+    transform: translate(1px, 1px);
+    box-shadow: none;
+  }
+  &[aria-checked="true"] {
+    background-color: var(--tint-soft);
+    box-shadow: 0 0 0 3px var(--tint), var(--shadow-ink-value);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+  }
+}
+
+@keyframes step-in {
+  from { opacity: 0; transform: translateX(28px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@utility animate-step {
+  animation: step-in 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@utility animate-float {
+  animation: float-y 3.5s ease-in-out infinite;
 }
 
 @keyframes rise-in {

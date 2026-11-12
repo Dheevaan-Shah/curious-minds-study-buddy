@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { BookOpen, ListChecks, TrendingUp } from "lucide-react";
-import { SetupPanel } from "@/components/study/SetupPanel";
+import { BookOpen, ListChecks, Pencil, TrendingUp } from "lucide-react";
+import { SetupWizard, type WizardStep } from "@/components/study/SetupWizard";
 import { LearnPanel } from "@/components/study/LearnPanel";
 import { QuizPanel } from "@/components/study/QuizPanel";
 import { ProgressPanel } from "@/components/study/ProgressPanel";
 import { loadAttempts, saveAttempts, type Attempt } from "@/lib/quiz-utils";
-import type { Difficulty, StudySetup, Subject } from "@/lib/study-config";
-import { cn } from "@/lib/utils";
+import { subjectLabel, type Difficulty, type StudySetup, type Subject } from "@/lib/study-config";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -32,14 +31,15 @@ export const Route = createFileRoute("/")({
 
 type Tab = "learn" | "quiz" | "progress";
 
-const TABS: { value: Tab; label: string; icon: typeof BookOpen }[] = [
-  { value: "learn", label: "Learn", icon: BookOpen },
-  { value: "quiz", label: "Quiz", icon: ListChecks },
-  { value: "progress", label: "Progress", icon: TrendingUp },
+const MODES: { value: Tab; label: string; blurb: string; icon: typeof BookOpen }[] = [
+  { value: "learn", label: "Learn", blurb: "Explained simply", icon: BookOpen },
+  { value: "quiz", label: "Quiz", blurb: "Test yourself", icon: ListChecks },
+  { value: "progress", label: "Progress", blurb: "Scores & feedback", icon: TrendingUp },
 ];
 
 function Index() {
-  const [setup, setSetup] = useState<StudySetup>({ subject: "math", grade: 8, topic: "" });
+  const [setup, setSetup] = useState<StudySetup | null>(null);
+  const [wizardStep, setWizardStep] = useState<WizardStep | null>(0);
   const [difficulty, setDifficulty] = useState<Difficulty>("medium");
   const [tab, setTab] = useState<Tab>("learn");
   const [attempts, setAttempts] = useState<Attempt[]>([]);
@@ -57,53 +57,103 @@ function Index() {
   }
 
   function practise(subject: Subject, topic: string, d: Difficulty) {
-    setSetup((s) => ({ ...s, subject, topic }));
+    setSetup((s) => (s ? { ...s, subject, topic } : s));
     setDifficulty(d);
     setTab("quiz");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  if (wizardStep !== null || !setup) {
+    return (
+      <SetupWizard
+        key={wizardStep ?? 0}
+        initial={setup ?? {}}
+        startStep={wizardStep ?? 0}
+        onDone={(s) => {
+          setSetup(s);
+          setWizardStep(null);
+          window.scrollTo({ top: 0 });
+        }}
+      />
+    );
+  }
+
   return (
-    <div className="min-h-screen">
-      <div className="mx-auto max-w-2xl px-4 pb-16 pt-8 sm:pt-12">
-        <header className="mb-8">
-          <div className="label-mono">Grades 8 – 10 · Maths · Science · Computer Science</div>
-          <h1 className="mt-2 text-4xl font-bold leading-none sm:text-5xl">
-            Study Buddy<span className="text-muted-foreground">.</span>
-          </h1>
-          <p className="mt-3 max-w-md text-muted-foreground">
-            Hard ideas, explained simply. Then quiz yourself and find out what to work on.
-          </p>
-        </header>
+    <div className="min-h-dvh" data-subject={setup.subject}>
+      <div className="mx-auto max-w-3xl px-4 pb-20 pt-5 sm:px-6">
+        <div className="flex items-center justify-between">
+          <div className="font-display text-lg font-bold">
+            Study Buddy<span className="text-tint">.</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setWizardStep(0)}
+            className="label-mono underline-offset-4 hover:text-foreground hover:underline"
+          >
+            Start over
+          </button>
+        </div>
 
-        <SetupPanel setup={setup} onChange={setSetup} />
-
-        <nav
-          role="tablist"
-          aria-label="Study modes"
-          className="mt-8 mb-5 grid grid-cols-3 gap-1 rounded-md border-[1.5px] border-ink bg-card p-1"
-        >
-          {TABS.map((t) => (
+        {/* What we're studying */}
+        <section className="sheet animate-rise mt-6 overflow-hidden">
+          <div className="bg-tint-soft px-5 pb-6 pt-5 sm:px-7">
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setWizardStep(0)}
+                className="group inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-ink bg-card px-3 py-1 text-sm font-medium transition-transform hover:-translate-y-0.5"
+              >
+                <span className="size-2 rounded-full bg-tint" />
+                {subjectLabel(setup.subject)}
+                <Pencil className="size-3 opacity-40 group-hover:opacity-100" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setWizardStep(1)}
+                className="group inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-ink bg-card px-3 py-1 text-sm font-medium transition-transform hover:-translate-y-0.5"
+              >
+                Grade {setup.grade}
+                <Pencil className="size-3 opacity-40 group-hover:opacity-100" />
+              </button>
+            </div>
             <button
-              key={t.value}
-              role="tab"
-              aria-selected={tab === t.value}
-              onClick={() => setTab(t.value)}
-              className={cn(
-                "flex items-center justify-center gap-2 rounded-sm py-2.5 text-sm font-semibold transition-colors",
-                tab === t.value ? "bg-ink text-primary-foreground" : "text-muted-foreground hover:text-foreground",
-              )}
+              type="button"
+              onClick={() => setWizardStep(2)}
+              className="group mt-4 flex items-start gap-2 text-left"
             >
-              <t.icon className="size-4" />
-              {t.label}
-              {t.value === "progress" && attempts.length > 0 && (
-                <span className="font-mono text-xs opacity-70">{attempts.length}</span>
-              )}
+              <h1 className="text-3xl font-bold leading-tight sm:text-5xl">{setup.topic}</h1>
+              <Pencil className="mt-2 size-4 shrink-0 opacity-30 group-hover:opacity-100 sm:mt-4" />
+            </button>
+          </div>
+        </section>
+
+        {/* Modes */}
+        <nav role="tablist" aria-label="Study modes" className="mt-6 grid grid-cols-3 gap-3">
+          {MODES.map((m) => (
+            <button
+              key={m.value}
+              type="button"
+              role="tab"
+              aria-selected={tab === m.value}
+              aria-checked={tab === m.value}
+              onClick={() => setTab(m.value)}
+              className="tile gap-1 p-3 sm:p-4"
+            >
+              <m.icon className="size-5 text-tint" />
+              <span className="mt-1 flex items-center gap-1.5 font-display text-base font-semibold sm:text-lg">
+                {m.label}
+                {m.value === "progress" && attempts.length > 0 && (
+                  <span className="rounded-full bg-ink px-1.5 font-mono text-[0.65rem] text-primary-foreground">
+                    {attempts.length}
+                  </span>
+                )}
+              </span>
+              <span className="hidden text-xs text-muted-foreground sm:block">{m.blurb}</span>
             </button>
           ))}
         </nav>
 
-        <div role="tabpanel">
+        <div role="tabpanel" className="mt-6">
           <div hidden={tab !== "learn"}>
             <LearnPanel setup={setup} onQuizMe={() => setTab("quiz")} />
           </div>
@@ -117,14 +167,16 @@ function Index() {
             />
           </div>
           {tab === "progress" && (
-            <ProgressPanel
-              attempts={attempts}
-              onClear={() => {
-                saveAttempts([]);
-                setAttempts([]);
-              }}
-              onPractise={practise}
-            />
+            <div className="animate-step">
+              <ProgressPanel
+                attempts={attempts}
+                onClear={() => {
+                  saveAttempts([]);
+                  setAttempts([]);
+                }}
+                onPractise={practise}
+              />
+            </div>
           )}
         </div>
       </div>

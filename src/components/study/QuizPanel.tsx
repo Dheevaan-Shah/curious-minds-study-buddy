@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowRight, Check, Lightbulb, MessageSquareText, RotateCcw, Sparkles, X } from "lucide-react";
+import { ArrowRight, Check, Flame, Lightbulb, MessageSquareText, RotateCcw, Sparkles, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { generateQuiz } from "@/lib/study.functions";
 import { scoreAnswers, type AnsweredQuestion, type Attempt } from "@/lib/quiz-utils";
@@ -12,7 +13,6 @@ import {
   type StudySetup,
   type Subject,
 } from "@/lib/study-config";
-import { ChoiceGroup } from "./ChoiceGroup";
 import { ErrorNote, Thinking } from "./ErrorNote";
 import { FeedbackView } from "./FeedbackView";
 import { useFeedback } from "./useFeedback";
@@ -29,6 +29,12 @@ type Running = {
 };
 
 const LETTERS = ["A", "B", "C", "D"];
+
+const DIFFICULTY_LINES: Record<Difficulty, string> = {
+  easy: "Warm up with the basics",
+  medium: "Use the idea in a few steps",
+  hard: "Tricky, multi-step challenges",
+};
 
 export function QuizPanel({
   setup,
@@ -145,7 +151,7 @@ export function QuizPanel({
             {finished.questions.map((q, i) => (
               <div
                 key={i}
-                className={`h-2 flex-1 rounded-full ${q.chosenIndex === q.correctIndex ? "bg-ink" : "bg-accent"}`}
+                className={`h-2 flex-1 rounded-full ${q.chosenIndex === q.correctIndex ? "bg-success" : "bg-danger"}`}
               />
             ))}
           </div>
@@ -154,7 +160,7 @@ export function QuizPanel({
               const ok = q.chosenIndex === q.correctIndex;
               return (
                 <li key={i} className="flex gap-3 text-sm">
-                  <span className={`mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-sm ${ok ? "bg-ink text-primary-foreground" : "border border-dashed border-ink"}`}>
+                  <span className={`mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-sm ${ok ? "bg-success text-primary-foreground" : "bg-danger text-primary-foreground"}`}>
                     {ok ? <Check className="size-3" /> : <X className="size-3" />}
                   </span>
                   <span>
@@ -189,27 +195,55 @@ export function QuizPanel({
   if (run) {
     const q = run.questions[run.index]!;
     const isCorrect = run.locked && run.selected === q.correctIndex;
+    let streak = 0;
+    for (let i = run.answers.length - 1; i >= 0; i--) {
+      const a = run.answers[i]!;
+      if (a.chosenIndex !== a.correctIndex) break;
+      streak++;
+    }
     return (
-      <section className="sheet animate-rise space-y-5 p-5 sm:p-7" key={run.index}>
+      <section
+        className={cn(
+          "sheet animate-step space-y-5 p-5 sm:p-8",
+          run.locked && (isCorrect ? "flash-success" : "flash-danger"),
+        )}
+        key={run.index}
+      >
         <div className="flex items-center justify-between">
           <span className="label-mono">
-            Question {run.index + 1} of {run.questions.length}
+            Question {run.index + 1} of {run.questions.length} · {run.difficulty}
           </span>
-          <span className="label-mono">{run.difficulty}</span>
+          {streak >= 2 && (
+            <span className="animate-rise inline-flex items-center gap-1 rounded-full bg-success-soft px-2.5 py-1 text-xs font-semibold text-success">
+              <Flame className="size-3.5" /> {streak} in a row
+            </span>
+          )}
         </div>
         <div className="flex gap-1.5" aria-hidden>
           {run.questions.map((_, i) => (
-            <div key={i} className={`h-1.5 flex-1 rounded-full ${i <= run.index ? "bg-ink" : "bg-accent"}`} />
+            <div
+              key={i}
+              className={cn(
+                "h-1.5 flex-1 rounded-full transition-colors",
+                i < run.answers.length
+                  ? run.answers[i]!.chosenIndex === run.answers[i]!.correctIndex
+                    ? "bg-success"
+                    : "bg-danger"
+                  : i === run.index
+                    ? "bg-ink"
+                    : "bg-accent",
+              )}
+            />
           ))}
         </div>
 
-        <h3 className="whitespace-pre-wrap text-xl font-semibold leading-snug">{q.question}</h3>
+        <h3 className="whitespace-pre-wrap text-xl font-semibold leading-snug sm:text-2xl">{q.question}</h3>
 
         <div className="space-y-2" role="radiogroup" aria-label="Answer options">
           {q.options.map((opt, i) => {
             let state = "idle";
             if (run.locked) {
-              if (i === q.correctIndex) state = "correct";
+              if (i === q.correctIndex) state = run.selected === q.correctIndex ? "correct" : "reveal";
               else if (i === run.selected) state = "wrong";
               else state = "muted";
             } else if (i === run.selected) state = "selected";
@@ -224,7 +258,15 @@ export function QuizPanel({
                 onClick={() => setRun({ ...run, selected: i })}
                 className="option-card"
               >
-                <span className="font-mono text-sm font-medium">{LETTERS[i]}</span>
+                <span className="font-mono text-sm font-medium">
+                  {state === "correct" || state === "reveal" ? (
+                    <Check className="size-4 text-success" />
+                  ) : state === "wrong" ? (
+                    <X className="size-4 text-danger" />
+                  ) : (
+                    LETTERS[i]
+                  )}
+                </span>
                 <span className="whitespace-pre-wrap">{opt}</span>
               </button>
             );
@@ -242,8 +284,19 @@ export function QuizPanel({
         )}
 
         {run.locked && (
-          <div className="rounded-md border-[1.5px] border-ink p-4 text-sm animate-rise">
-            <div className="mb-1 font-display text-base font-semibold">
+          <div
+            className={cn(
+              "animate-rise rounded-md border-[1.5px] p-4 text-sm",
+              isCorrect ? "border-success bg-success-soft" : "border-danger bg-danger-soft",
+            )}
+          >
+            <div
+              className={cn(
+                "mb-1 flex items-center gap-1.5 font-display text-base font-semibold",
+                isCorrect ? "text-success" : "text-danger",
+              )}
+            >
+              {isCorrect ? <Check className="size-4" /> : <X className="size-4" />}
               {isCorrect ? "Correct!" : "Not quite."}
             </div>
             <p>{q.explanation}</p>
@@ -277,12 +330,29 @@ export function QuizPanel({
   // ---------- Start ----------
   return (
     <div className="space-y-5">
-      <ChoiceGroup
-        label="Quiz difficulty"
-        options={DIFFICULTIES}
-        value={difficulty}
-        onChange={onDifficultyChange}
-      />
+      <div>
+        <div className="label-mono mb-2">Pick a difficulty</div>
+        <div role="radiogroup" aria-label="Quiz difficulty" className="grid grid-cols-3 gap-3">
+          {DIFFICULTIES.map((d, i) => (
+            <button
+              key={d.value}
+              type="button"
+              role="radio"
+              aria-checked={difficulty === d.value}
+              onClick={() => onDifficultyChange(d.value)}
+              className="tile items-center p-4 text-center"
+            >
+              <span className="flex gap-1" aria-hidden>
+                {[0, 1, 2].map((n) => (
+                  <span key={n} className={cn("h-3 w-1.5 rounded-full", n <= i ? "bg-tint" : "bg-accent")} />
+                ))}
+              </span>
+              <span className="font-display text-lg font-semibold">{d.label}</span>
+              <span className="hidden text-xs text-muted-foreground sm:block">{DIFFICULTY_LINES[d.value]}</span>
+            </button>
+          ))}
+        </div>
+      </div>
       <Button variant="ink" size="xl" className="w-full" disabled={!hasTopic || loading} onClick={start}>
         <Sparkles /> Generate quiz
       </Button>
