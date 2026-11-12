@@ -28,3 +28,8 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules
+- AI calls live only in server functions (`src/lib/study.functions.ts`) via the shared `generateJson` helper in `src/lib/ai.server.ts` using strict JSON schemas — keeps prompts and the gateway key server-side and output typed.
+- Quiz options are shuffled server-side after generation (`shuffleQuestion`) — models tend to put the right answer first.
+- Quiz history is stored in browser localStorage (`src/lib/quiz-utils.ts`), read in an effect — no backend/auth by design; avoids hydration mismatches.
