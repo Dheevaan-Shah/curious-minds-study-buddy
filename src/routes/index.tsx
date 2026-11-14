@@ -5,6 +5,7 @@ import { SetupWizard, type WizardStep } from "@/components/study/SetupWizard";
 import { LearnPanel } from "@/components/study/LearnPanel";
 import { QuizPanel } from "@/components/study/QuizPanel";
 import { ProgressPanel } from "@/components/study/ProgressPanel";
+import { FeedbackBox } from "@/components/study/FeedbackBox";
 import { loadAttempts, saveAttempts, type Attempt } from "@/lib/quiz-utils";
 import { subjectLabel, type Difficulty, type StudySetup, type Subject } from "@/lib/study-config";
 
@@ -180,6 +181,7 @@ function Index() {
           )}
         </div>
       </div>
+      <FeedbackBox context={`${subjectLabel(setup.subject)} · Grade ${setup.grade} · ${setup.topic}`} />
     </div>
   );
 }
