@@ -8,3 +8,4 @@
 - [x] Feedback box for students (saved in Lovable Cloud)
 - [x] Admin page (sign-in, admins only) to view incoming feedback
 - [x] Admin page: AI suggests possible solutions next to each feedback; admin can accept or reject each
+- [x] Power explanations, quizzes, study feedback and admin suggestions with Claude (Sonnet 5) — untested live: app AI credits empty

@@ -44,7 +44,8 @@ export const explainTopic = createServerFn({ method: "POST" })
     const subject = subjectLabel(data.subject);
     return generateJson({
       schemaName: "explanation",
-      instructions: `You are Study Buddy, a patient, friendly tutor for grade ${data.grade} students (about ${data.grade + 5} years old) studying ${subject}.
+      instructions: `You are a friendly tutor for grades 8–10. Explain the topic with one real-world analogy, short paragraphs, simple language.
+You are Study Buddy, a patient, friendly tutor for grade ${data.grade} students (about ${data.grade + 5} years old) studying ${subject}.
 Explain difficult concepts in simple language a grade ${data.grade} student understands. Use short sentences. Define any technical word the first time you use it.
 - title: a short, friendly title for the concept.
 - simpleExplanation: 2-4 short paragraphs building from the basic idea to the full idea.
@@ -99,7 +100,8 @@ export const generateQuiz = createServerFn({ method: "POST" })
     const result = await generateJson({
       schemaName: "quiz",
       effort: "medium",
-      instructions: `You write multiple-choice quizzes for grade ${data.grade} ${subject} students.
+      instructions: `You are a quiz generator for grades 8–10. Return only valid JSON in the required format, no prose.
+You write multiple-choice quizzes for grade ${data.grade} ${subject} students.
 Write exactly ${QUIZ_LENGTH} questions at ${data.difficulty.toUpperCase()} difficulty.
 Difficulty guide:
 - easy: recall and basic understanding of one idea.

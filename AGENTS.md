@@ -31,5 +31,6 @@ use the editor.
 
 ## Project rules
 - AI calls live only in server functions (`src/lib/study.functions.ts`) via the shared `generateJson` helper in `src/lib/ai.server.ts` using strict JSON schemas — keeps prompts and the gateway key server-side and output typed.
+- All AI features use one model, set once in `src/lib/ai.server.ts` (Claude via the gateway messages surface) — swap models in one place, never per feature or from the browser.
 - Quiz options are shuffled server-side after generation (`shuffleQuestion`) — models tend to put the right answer first.
 - Quiz history is stored in browser localStorage (`src/lib/quiz-utils.ts`), read in an effect — no backend/auth by design; avoids hydration mismatches.
