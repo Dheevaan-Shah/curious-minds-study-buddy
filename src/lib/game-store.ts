@@ -32,7 +32,7 @@ export function useApplyAccent() {
   const profile = profileStore.useValue();
   useEffect(() => {
     const accent = equippedAccent(profileStore.get());
-    if (accent) document.documentElement.dataset.accent = accent;
-    else delete document.documentElement.dataset.accent;
+    if (accent) document.documentElement.dataset["accent"] = accent;
+    else delete document.documentElement.dataset["accent"];
   }, [profile]);
 }
