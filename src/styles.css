@@ -84,6 +84,8 @@
   --color-tint: var(--tint);
   --color-tint-soft: var(--tint-soft);
   --shadow-ink-sm: var(--shadow-ink-sm-value);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
 }
 
 :root {
@@ -140,11 +142,74 @@
   --cs-soft: oklch(0.955 0.03 75);
   --tint: var(--ink);
   --tint-soft: var(--muted);
+  /* "Review again" amber */
+  --warn: oklch(0.68 0.12 70);
+  --warn-soft: oklch(0.955 0.035 80);
+  /* Shop accents (soft, never neon) */
+  --accent-emerald: oklch(0.58 0.11 160);
+  --accent-emerald-soft: oklch(0.95 0.03 160);
+  --accent-royal: oklch(0.52 0.13 262);
+  --accent-royal-soft: oklch(0.945 0.03 262);
+  --accent-rose: oklch(0.6 0.13 10);
+  --accent-rose-soft: oklch(0.955 0.025 10);
+  --accent-violet: oklch(0.55 0.12 295);
+  --accent-violet-soft: oklch(0.95 0.03 295);
+}
+
+.dark {
+  --paper: oklch(0.165 0 0);
+  --ink: oklch(0.94 0 0);
+  --grid: oklch(0.21 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: var(--ink);
+  --popover: oklch(0.22 0 0);
+  --popover-foreground: var(--ink);
+  --primary-foreground: oklch(0.15 0 0);
+  --secondary: oklch(0.27 0 0);
+  --muted: oklch(0.25 0 0);
+  --muted-foreground: oklch(0.7 0 0);
+  --accent: oklch(0.32 0 0);
+  --destructive: oklch(0.7 0 0);
+  --destructive-foreground: oklch(0.15 0 0);
+  --border: oklch(0.36 0 0);
+  --input: oklch(0.4 0 0);
+  --sidebar: oklch(0.19 0 0);
+  --sidebar-primary-foreground: oklch(0.15 0 0);
+  --sidebar-accent: oklch(0.26 0 0);
+  --sidebar-border: oklch(0.36 0 0);
+  --shadow-ink-value: 4px 4px 0 0 oklch(0.46 0 0);
+  --shadow-ink-sm-value: 2px 2px 0 0 oklch(0.46 0 0);
+  --success: oklch(0.72 0.14 152);
+  --success-soft: oklch(0.29 0.05 152);
+  --danger: oklch(0.7 0.15 25);
+  --danger-soft: oklch(0.29 0.055 25);
+  --warn: oklch(0.78 0.12 75);
+  --warn-soft: oklch(0.3 0.05 75);
+  --maths: oklch(0.74 0.09 255);
+  --maths-soft: oklch(0.27 0.035 255);
+  --science: oklch(0.74 0.08 170);
+  --science-soft: oklch(0.27 0.035 170);
+  --cs: oklch(0.78 0.1 70);
+  --cs-soft: oklch(0.29 0.04 70);
+  --accent-emerald: oklch(0.74 0.11 160);
+  --accent-emerald-soft: oklch(0.28 0.04 160);
+  --accent-royal: oklch(0.72 0.12 262);
+  --accent-royal-soft: oklch(0.28 0.05 262);
+  --accent-rose: oklch(0.75 0.12 10);
+  --accent-rose-soft: oklch(0.29 0.045 10);
+  --accent-violet: oklch(0.73 0.12 295);
+  --accent-violet-soft: oklch(0.28 0.05 295);
 }
 
 [data-subject="math"] { --tint: var(--maths); --tint-soft: var(--maths-soft); }
 [data-subject="science"] { --tint: var(--science); --tint-soft: var(--science-soft); }
 [data-subject="cs"] { --tint: var(--cs); --tint-soft: var(--cs-soft); }
+
+/* Equipped shop accent wins over the subject tint */
+html[data-accent="emerald"], html[data-accent="emerald"] [data-subject] { --tint: var(--accent-emerald); --tint-soft: var(--accent-emerald-soft); }
+html[data-accent="royal"], html[data-accent="royal"] [data-subject] { --tint: var(--accent-royal); --tint-soft: var(--accent-royal-soft); }
+html[data-accent="rose"], html[data-accent="rose"] [data-subject] { --tint: var(--accent-rose); --tint-soft: var(--accent-rose-soft); }
+html[data-accent="violet"], html[data-accent="violet"] [data-subject] { --tint: var(--accent-violet); --tint-soft: var(--accent-violet-soft); }
 
 @layer base {
   * {
@@ -353,3 +418,56 @@
   animation: rise-in 280ms ease-out both;
 }
 
+
+/* Countdown bar for timed questions */
+@keyframes countdown {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+@utility animate-countdown {
+  transform-origin: left center;
+  animation-name: countdown;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+/* 3D flashcard */
+@utility flip-scene {
+  perspective: 1200px;
+}
+@utility flip-card {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 520ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  &[data-flipped="true"] {
+    transform: rotateY(180deg);
+  }
+}
+@utility flip-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+@utility flip-back {
+  transform: rotateY(180deg);
+}
+
+/* Floating suggestion list under the topic search */
+@utility suggest-item {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0.6rem 0.9rem;
+  text-align: left;
+  cursor: pointer;
+  &[aria-selected="true"] {
+    background-color: var(--tint-soft);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-step, .animate-rise, .animate-float, .flash-success, .flash-danger { animation: none !important; }
+  .flip-card { transition: none; }
+}

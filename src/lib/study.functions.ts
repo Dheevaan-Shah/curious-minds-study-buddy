@@ -10,6 +10,7 @@ import {
   type AiResult,
   type Explanation,
   type Feedback,
+  type Flashcard,
   type QuizQuestion,
 } from "./study-config";
 
@@ -93,7 +94,12 @@ const questionSchema = z.object({
 
 export const generateQuiz = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) =>
-    setupSchema.extend({ difficulty: z.enum(DIFFICULTY_VALUES) }).parse(data),
+    setupSchema
+      .extend({
+        difficulty: z.enum(DIFFICULTY_VALUES),
+        count: z.number().int().min(QUIZ_LENGTH.min).max(QUIZ_LENGTH.max).default(QUIZ_LENGTH.default),
+      })
+      .parse(data),
   )
   .handler(async ({ data }): Promise<AiResult<QuizQuestion[]>> => {
     const subject = subjectLabel(data.subject);
@@ -102,7 +108,7 @@ export const generateQuiz = createServerFn({ method: "POST" })
       effort: "medium",
       instructions: `You are a quiz generator for grades 8–10. Return only valid JSON in the required format, no prose.
 You write multiple-choice quizzes for grade ${data.grade} ${subject} students.
-Write exactly ${QUIZ_LENGTH} questions at ${data.difficulty.toUpperCase()} difficulty.
+Write exactly ${data.count} question${data.count === 1 ? "" : "s"} at ${data.difficulty.toUpperCase()} difficulty.
 Difficulty guide:
 - easy: recall and basic understanding of one idea.
 - medium: apply the idea in one or two steps.
@@ -144,7 +150,7 @@ ${STYLE}`,
       parse: (v) => z.object({ questions: z.array(questionSchema).min(1) }).parse(v).questions,
     });
     if (!result.ok) return result;
-    return { ok: true, data: result.data.slice(0, QUIZ_LENGTH).map((q) => shuffleQuestion(q)) };
+    return { ok: true, data: result.data.slice(0, data.count).map((q) => shuffleQuestion(q)) };
   });
 
 // ---------- Feedback ----------
@@ -236,4 +242,43 @@ ${STYLE}`,
       },
       parse: (v) => feedbackSchema.parse(v),
     });
+  });
+
+// ---------- Flashcards ----------
+
+const flashcardSchema = z.object({ front: z.string(), back: z.string(), concept: z.string() });
+
+export const generateFlashcards = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => setupSchema.parse(data))
+  .handler(async ({ data }): Promise<AiResult<Flashcard[]>> => {
+    const subject = subjectLabel(data.subject);
+    const result = await generateJson({
+      schemaName: "flashcards",
+      instructions: `You are a friendly tutor for grades 8–10 making revision flashcards for grade ${data.grade} ${subject}.
+Write exactly 10 flashcards covering different key ideas of the topic, from basic to harder.
+- front: a short question, term or prompt (max 20 words).
+- back: a clear, simple answer or explanation (1-3 short sentences).
+- concept: the idea tested, in 2-5 words.
+If the topic is not part of ${subject}, use the closest relevant ${subject} topic instead.
+${STYLE}`,
+      input: `Topic: ${data.topic}`,
+      schema: {
+        type: "object",
+        additionalProperties: false,
+        required: ["cards"],
+        properties: {
+          cards: {
+            type: "array",
+            items: {
+              type: "object",
+              additionalProperties: false,
+              required: ["front", "back", "concept"],
+              properties: { front: str, back: str, concept: str },
+            },
+          },
+        },
+      },
+      parse: (v) => z.object({ cards: z.array(flashcardSchema).min(1) }).parse(v).cards.slice(0, 12),
+    });
+    return result;
   });
