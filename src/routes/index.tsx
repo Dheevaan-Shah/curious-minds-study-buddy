@@ -6,6 +6,7 @@ import { LearnPanel } from "@/components/study/LearnPanel";
 import { QuizPanel } from "@/components/study/QuizPanel";
 import { ProgressPanel } from "@/components/study/ProgressPanel";
 import { FeedbackBox } from "@/components/study/FeedbackBox";
+import { ThemeToggle } from "@/components/study/ThemeToggle";
 import { loadAttempts, saveAttempts, type Attempt } from "@/lib/quiz-utils";
 import { subjectLabel, type Difficulty, type StudySetup, type Subject } from "@/lib/study-config";
 
@@ -86,13 +87,16 @@ function Index() {
           <div className="font-display text-lg font-bold">
             Study Buddy<span className="text-tint">.</span>
           </div>
-          <button
-            type="button"
-            onClick={() => setWizardStep(0)}
-            className="label-mono underline-offset-4 hover:text-foreground hover:underline"
-          >
-            Start over
-          </button>
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            <button
+              type="button"
+              onClick={() => setWizardStep(0)}
+              className="label-mono underline-offset-4 hover:text-foreground hover:underline"
+            >
+              Start over
+            </button>
+          </div>
         </div>
 
         {/* What we're studying */}
@@ -162,6 +166,7 @@ function Index() {
             <QuizPanel
               setup={setup}
               difficulty={difficulty}
+              attempts={attempts}
               onDifficultyChange={setDifficulty}
               onAttemptSaved={addAttempt}
               onPractise={practise}

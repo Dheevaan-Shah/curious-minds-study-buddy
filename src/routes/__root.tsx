@@ -13,6 +13,8 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
+import { BubbleBackground } from "@/components/study/BubbleBackground";
+import { THEME_BOOT_SCRIPT, useApplyTheme } from "@/lib/theme";
 
 function NotFoundComponent() {
   return (
@@ -103,6 +105,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap",
       },
     ],
+    // Applies dark mode before first paint so the page never flashes white.
+    scripts: [{ children: THEME_BOOT_SCRIPT }],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -112,7 +116,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
@@ -126,10 +130,12 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useApplyTheme();
 
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+      <BubbleBackground />
       <Outlet />
       <Toaster />
     </QueryClientProvider>
