@@ -93,7 +93,7 @@ function ShopSection({ title, items, wide }: { title: string; items: ShopItem[];
       <div className="label-mono mb-2">{title}</div>
       <div className={cn("grid gap-2", wide ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-4")}>
         {items.map((item) => (
-          <ShopCard key={item.id} item={item} wide={wide} />
+          <ShopCard key={item.id} item={item} wide={!!wide} />
         ))}
       </div>
     </section>
