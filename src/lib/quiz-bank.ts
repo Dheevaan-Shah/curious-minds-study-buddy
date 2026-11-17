@@ -1,7 +1,7 @@
 // "Cache as you play": every AI quiz is saved on the device so quizzes still work offline
 // or when AI generation fails.
 import { shuffleQuestion } from "./quiz-utils";
-import type { Difficulty, QuizQuestion, StudySetup } from "./study-config";
+import type { Difficulty, Flashcard, QuizQuestion, StudySetup } from "./study-config";
 
 export const BANK_KEY = "study-buddy:quiz-bank";
 export const BANK_LIMIT_PER_SET = 50;
@@ -36,6 +36,20 @@ export function pickFromBank(bank: QuizBank, key: string, count: number, random:
     [list[i], list[j]] = [list[j]!, list[i]!];
   }
   return list.slice(0, Math.max(0, count)).map((q) => shuffleQuestion(q, random));
+}
+
+/** Offline flashcards: saved quiz questions for this topic (any difficulty), answer + explanation on the back. */
+export function flashcardsFromBank(bank: QuizBank, setup: StudySetup, limit = 10): Flashcard[] {
+  const levels: Difficulty[] = ["easy", "medium", "hard"];
+  const seen = new Set<string>();
+  const cards: Flashcard[] = [];
+  for (const d of levels)
+    for (const q of bank[bankKey(setup, d)] ?? []) {
+      if (seen.has(norm(q)) || cards.length >= limit) continue;
+      seen.add(norm(q));
+      cards.push({ front: q.question, back: `${q.options[q.correctIndex]}. ${q.explanation}`.trim(), concept: q.concept });
+    }
+  return cards;
 }
 
 function isQuestion(q: unknown): q is QuizQuestion {

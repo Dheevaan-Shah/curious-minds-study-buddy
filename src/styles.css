@@ -154,6 +154,14 @@
   --accent-rose-soft: oklch(0.955 0.025 10);
   --accent-violet: oklch(0.55 0.12 295);
   --accent-violet-soft: oklch(0.95 0.03 295);
+  --accent-amber: oklch(0.66 0.12 60);
+  --accent-amber-soft: oklch(0.955 0.035 70);
+  --accent-navy: oklch(0.42 0.1 255);
+  --accent-navy-soft: oklch(0.94 0.025 255);
+  --accent-mint: oklch(0.66 0.09 175);
+  --accent-mint-soft: oklch(0.955 0.03 175);
+  --accent-crimson: oklch(0.52 0.15 22);
+  --accent-crimson-soft: oklch(0.95 0.03 22);
   /* Background bubbles: extremely light warm tan */
   --bubble: oklch(0.935 0.022 78);
 }
@@ -201,6 +209,14 @@
   --accent-rose-soft: oklch(0.29 0.045 10);
   --accent-violet: oklch(0.73 0.12 295);
   --accent-violet-soft: oklch(0.28 0.05 295);
+  --accent-amber: oklch(0.8 0.11 70);
+  --accent-amber-soft: oklch(0.3 0.05 70);
+  --accent-navy: oklch(0.7 0.1 255);
+  --accent-navy-soft: oklch(0.26 0.045 255);
+  --accent-mint: oklch(0.8 0.09 175);
+  --accent-mint-soft: oklch(0.28 0.04 175);
+  --accent-crimson: oklch(0.7 0.14 22);
+  --accent-crimson-soft: oklch(0.29 0.055 22);
   --bubble: oklch(0.235 0.014 70);
 }
 
@@ -213,6 +229,38 @@ html[data-accent="emerald"], html[data-accent="emerald"] [data-subject] { --tint
 html[data-accent="royal"], html[data-accent="royal"] [data-subject] { --tint: var(--accent-royal); --tint-soft: var(--accent-royal-soft); }
 html[data-accent="rose"], html[data-accent="rose"] [data-subject] { --tint: var(--accent-rose); --tint-soft: var(--accent-rose-soft); }
 html[data-accent="violet"], html[data-accent="violet"] [data-subject] { --tint: var(--accent-violet); --tint-soft: var(--accent-violet-soft); }
+html[data-accent="amber"], html[data-accent="amber"] [data-subject] { --tint: var(--accent-amber); --tint-soft: var(--accent-amber-soft); }
+html[data-accent="navy"], html[data-accent="navy"] [data-subject] { --tint: var(--accent-navy); --tint-soft: var(--accent-navy-soft); }
+html[data-accent="mint"], html[data-accent="mint"] [data-subject] { --tint: var(--accent-mint); --tint-soft: var(--accent-mint-soft); }
+html[data-accent="crimson"], html[data-accent="crimson"] [data-subject] { --tint: var(--accent-crimson); --tint-soft: var(--accent-crimson-soft); }
+
+/* Rainbow Mode: the accent hue glides around the colour wheel, shifting every second */
+@property --rainbow-hue {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+@keyframes rainbow-hue {
+  from { --rainbow-hue: 0; }
+  to { --rainbow-hue: 360; }
+}
+html[data-accent="rainbow"] {
+  animation: rainbow-hue 24s linear infinite;
+}
+html[data-accent="rainbow"], html[data-accent="rainbow"] [data-subject] {
+  --tint: oklch(0.6 0.13 var(--rainbow-hue));
+  --tint-soft: oklch(0.95 0.035 var(--rainbow-hue));
+}
+html.dark[data-accent="rainbow"], html.dark[data-accent="rainbow"] [data-subject] {
+  --tint: oklch(0.76 0.12 var(--rainbow-hue));
+  --tint-soft: oklch(0.29 0.05 var(--rainbow-hue));
+}
+@utility rainbow-swatch {
+  background: conic-gradient(
+    oklch(0.7 0.13 0), oklch(0.7 0.13 60), oklch(0.7 0.13 120), oklch(0.7 0.13 180),
+    oklch(0.7 0.13 240), oklch(0.7 0.13 300), oklch(0.7 0.13 360)
+  );
+}
 
 @layer base {
   * {
@@ -490,4 +538,5 @@ html[data-accent="violet"], html[data-accent="violet"] [data-subject] { --tint: 
   .animate-step, .animate-rise, .animate-float, .flash-success, .flash-danger, .animate-select { animation: none !important; }
   .option-card, .tile { animation: none !important; }
   .flip-card { transition: none; }
+  html[data-accent="rainbow"] { animation-duration: 240s; }
 }

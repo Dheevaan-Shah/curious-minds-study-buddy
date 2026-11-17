@@ -4,12 +4,23 @@ import type { Difficulty, Subject } from "./study-config";
 
 export const DIFFICULTY_MULTIPLIER: Record<Difficulty, number> = { easy: 1, medium: 1.5, hard: 2 };
 export const COINS_PER_CORRECT = 10;
+/** Each day of streak adds this much extra (0.1 = +10%), with no cap. */
+export const STREAK_BOOST_PER_DAY = 0.1;
 
-/** Coins for finishing a quiz: correct-answer share × length × 10, times the difficulty multiplier. Always at least 1. */
-export function coinsForQuiz(correct: number, total: number, difficulty: Difficulty): number {
+/** Extra coin percentage for a streak: +10% per day, no cap. */
+export function streakBoostPercent(streakDays: number): number {
+  return Math.max(0, Math.floor(streakDays)) * STREAK_BOOST_PER_DAY * 100;
+}
+
+/**
+ * Coins for finishing a quiz: 10 per correct answer (so score % and quiz length both count),
+ * times the difficulty multiplier, plus +10% per streak day (no cap). Always at least 1.
+ */
+export function coinsForQuiz(correct: number, total: number, difficulty: Difficulty, streakDays = 0): number {
   if (total <= 0) return 0;
-  const percent = correct / total;
-  return Math.max(1, Math.round(percent * total * COINS_PER_CORRECT * DIFFICULTY_MULTIPLIER[difficulty]));
+  const days = Math.max(0, Math.floor(streakDays));
+  const base = Math.max(0, Math.min(correct, total)) * COINS_PER_CORRECT * DIFFICULTY_MULTIPLIER[difficulty];
+  return Math.max(1, Math.round((base * (10 + days)) / 10));
 }
 
 export type Streak = { lastDate: string | null; count: number };
@@ -46,19 +57,31 @@ export function currentStreak(streak: Streak, today: string): number {
   return gap <= 1 ? streak.count : 0;
 }
 
-export type Accent = "emerald" | "royal" | "rose" | "violet";
+export type Accent = "emerald" | "royal" | "rose" | "violet" | "amber" | "navy" | "mint" | "crimson" | "rainbow";
 export type ShopItem =
-  | { id: string; kind: "accent"; label: string; price: number; accent: Accent }
+  | { id: string; kind: "accent"; label: string; price: number; accent: Accent; legendary?: boolean }
   | { id: string; kind: "icon"; label: string; price: number; icon: string };
+
+export const RAINBOW_PRICE = 9999;
 
 export const SHOP_ITEMS: ShopItem[] = [
   { id: "accent-emerald", kind: "accent", label: "Emerald", price: 200, accent: "emerald" },
   { id: "accent-royal", kind: "accent", label: "Royal Blue", price: 200, accent: "royal" },
   { id: "accent-rose", kind: "accent", label: "Rose", price: 200, accent: "rose" },
   { id: "accent-violet", kind: "accent", label: "Violet", price: 200, accent: "violet" },
+  { id: "accent-amber", kind: "accent", label: "Sunset Amber", price: 250, accent: "amber" },
+  { id: "accent-navy", kind: "accent", label: "Midnight Navy", price: 250, accent: "navy" },
+  { id: "accent-mint", kind: "accent", label: "Mint", price: 250, accent: "mint" },
+  { id: "accent-crimson", kind: "accent", label: "Crimson", price: 300, accent: "crimson" },
   { id: "icon-lightning", kind: "icon", label: "Lightning", price: 120, icon: "⚡" },
   { id: "icon-brain", kind: "icon", label: "Brain", price: 120, icon: "🧠" },
+  { id: "icon-target", kind: "icon", label: "Target", price: 120, icon: "🎯" },
+  { id: "icon-rocket", kind: "icon", label: "Rocket", price: 150, icon: "🚀" },
+  { id: "icon-beaker", kind: "icon", label: "Beaker", price: 150, icon: "🧪" },
+  { id: "icon-saturn", kind: "icon", label: "Saturn", price: 200, icon: "🪐" },
   { id: "icon-diamond", kind: "icon", label: "Diamond", price: 250, icon: "💎" },
+  { id: "icon-crown", kind: "icon", label: "Crown", price: 300, icon: "👑" },
+  { id: "accent-rainbow", kind: "accent", label: "Rainbow Mode", price: RAINBOW_PRICE, accent: "rainbow", legendary: true },
 ];
 
 export const DEFAULT_STREAK_ICON = "🔥";
@@ -128,4 +151,30 @@ export function isPersonalBest(previous: Attempt[], attempt: Pick<Attempt, "subj
   const prev = bestAttempt(previous, attempt.subject, attempt.topic);
   if (!prev || attempt.total === 0) return false;
   return attempt.correct / attempt.total > prev.correct / prev.total;
+}
+
+export type TopicRecord = { topic: string; best: Attempt; attempts: number; percent: number };
+
+/** Best score per topic, grouped by subject, highest first (for the Progress & Records view). */
+export function recordsBySubject(attempts: Attempt[]): Partial<Record<Subject, TopicRecord[]>> {
+  const groups = new Map<string, Attempt[]>();
+  for (const a of attempts) {
+    if (a.total === 0) continue;
+    const k = topicKey(a.subject, a.topic);
+    groups.set(k, [...(groups.get(k) ?? []), a]);
+  }
+  const out: Partial<Record<Subject, TopicRecord[]>> = {};
+  for (const items of groups.values()) {
+    const first = items[0]!;
+    const best = bestAttempt(items, first.subject, first.topic)!;
+    const rec: TopicRecord = {
+      topic: best.topic.trim(),
+      best,
+      attempts: items.length,
+      percent: Math.round((best.correct / best.total) * 100),
+    };
+    (out[first.subject] ??= []).push(rec);
+  }
+  for (const list of Object.values(out)) list!.sort((a, b) => b.percent - a.percent || a.topic.localeCompare(b.topic));
+  return out;
 }

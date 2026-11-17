@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { BookOpen, ListChecks, Pencil, TrendingUp } from "lucide-react";
+import { BookOpen, Layers, ListChecks, Pencil, TrendingUp } from "lucide-react";
 import { SetupWizard, type WizardStep } from "@/components/study/SetupWizard";
 import { LearnPanel } from "@/components/study/LearnPanel";
 import { QuizPanel } from "@/components/study/QuizPanel";
 import { ProgressPanel } from "@/components/study/ProgressPanel";
 import { FeedbackBox } from "@/components/study/FeedbackBox";
 import { ThemeToggle } from "@/components/study/ThemeToggle";
+import { GameBar } from "@/components/study/GameBar";
+import { FlashcardsPanel } from "@/components/study/FlashcardsPanel";
+import { bestAttempt } from "@/lib/gamification";
 import { loadAttempts, saveAttempts, type Attempt } from "@/lib/quiz-utils";
 import { subjectLabel, type Difficulty, type StudySetup, type Subject } from "@/lib/study-config";
 
@@ -31,11 +34,12 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-type Tab = "learn" | "quiz" | "progress";
+type Tab = "learn" | "quiz" | "flashcards" | "progress";
 
 const MODES: { value: Tab; label: string; blurb: string; icon: typeof BookOpen }[] = [
   { value: "learn", label: "Learn", blurb: "Explained simply", icon: BookOpen },
   { value: "quiz", label: "Quiz", blurb: "Test yourself", icon: ListChecks },
+  { value: "flashcards", label: "Flashcards", blurb: "Flip & recall", icon: Layers },
   { value: "progress", label: "Progress", blurb: "Scores & feedback", icon: TrendingUp },
 ];
 
@@ -70,6 +74,7 @@ function Index() {
       <SetupWizard
         key={wizardStep ?? 0}
         initial={setup ?? {}}
+        attempts={attempts}
         startStep={wizardStep ?? 0}
         onDone={(s) => {
           setSetup(s);
@@ -80,14 +85,17 @@ function Index() {
     );
   }
 
+  const best = bestAttempt(attempts, setup.subject, setup.topic);
+
   return (
     <div className="min-h-dvh" data-subject={setup.subject}>
       <div className="mx-auto max-w-3xl px-4 pb-20 pt-5 sm:px-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="font-display text-lg font-bold">
             Study Buddy<span className="text-tint">.</span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <GameBar attempts={attempts} />
             <ThemeToggle />
             <button
               type="button"
@@ -120,6 +128,11 @@ function Index() {
                 Grade {setup.grade}
                 <Pencil className="size-3 opacity-40 group-hover:opacity-100" />
               </button>
+              {best && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-card px-3 py-1 font-mono text-sm" title="Your best score on this topic">
+                  🏆 Best: {best.correct}/{best.total}
+                </span>
+              )}
             </div>
             <button
               type="button"
@@ -133,7 +146,7 @@ function Index() {
         </section>
 
         {/* Modes */}
-        <nav role="tablist" aria-label="Study modes" className="mt-6 grid grid-cols-3 gap-3">
+        <nav role="tablist" aria-label="Study modes" className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {MODES.map((m) => (
             <button
               key={m.value}
@@ -171,6 +184,9 @@ function Index() {
               onAttemptSaved={addAttempt}
               onPractise={practise}
             />
+          </div>
+          <div hidden={tab !== "flashcards"}>
+            <FlashcardsPanel setup={setup} active={tab === "flashcards"} />
           </div>
           {tab === "progress" && (
             <div className="animate-step">

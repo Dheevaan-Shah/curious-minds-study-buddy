@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { createLocalStore } from "./local-store";
-import { EMPTY_PROFILE, coinsForQuiz, dayKey, equippedAccent, recordStreak, type Profile } from "./gamification";
+import { EMPTY_PROFILE, coinsForQuiz, dayKey, equippedAccent, recordStreak, streakBoostPercent, type Profile } from "./gamification";
 import type { Attempt } from "./quiz-utils";
 
 function normalizeProfile(raw: unknown): Profile {
@@ -20,11 +20,14 @@ function normalizeProfile(raw: unknown): Profile {
 
 export const profileStore = createLocalStore<Profile>("study-buddy:profile", EMPTY_PROFILE, normalizeProfile);
 
-/** Award coins and update the streak for a finished quiz. Returns coins earned. */
-export function rewardQuiz(attempt: Pick<Attempt, "correct" | "total" | "difficulty">): number {
-  const earned = coinsForQuiz(attempt.correct, attempt.total, attempt.difficulty);
-  profileStore.set((p) => ({ ...p, coins: p.coins + earned, streak: recordStreak(p.streak, dayKey(new Date())) }));
-  return earned;
+export type QuizReward = { coins: number; streak: number; boostPercent: number };
+
+/** Update the streak for a finished quiz, then award coins (including the streak boost). */
+export function rewardQuiz(attempt: Pick<Attempt, "correct" | "total" | "difficulty">): QuizReward {
+  const streak = recordStreak(profileStore.get().streak, dayKey(new Date()));
+  const coins = coinsForQuiz(attempt.correct, attempt.total, attempt.difficulty, streak.count);
+  profileStore.set((p) => ({ ...p, coins: p.coins + coins, streak }));
+  return { coins, streak: streak.count, boostPercent: streakBoostPercent(streak.count) };
 }
 
 /** Mirror the equipped accent onto <html data-accent> so CSS can retint the app. */

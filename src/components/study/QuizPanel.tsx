@@ -8,6 +8,7 @@ import { Slider } from "@/components/ui/slider";
 import { generateQuiz } from "@/lib/study.functions";
 import { clampQuizLength, scoreAnswers, type AnsweredQuestion, type Attempt } from "@/lib/quiz-utils";
 import { isPersonalBest } from "@/lib/gamification";
+import { rewardQuiz, type QuizReward } from "@/lib/game-store";
 import { addToBank, bankKey, loadBank, pickFromBank, saveBank } from "@/lib/quiz-bank";
 import { readCssHex } from "@/lib/css-color";
 import {
@@ -39,7 +40,7 @@ type Running = {
   answers: AnsweredQuestion[];
 };
 
-type Finished = { attempt: Attempt; personalBest: boolean };
+type Finished = { attempt: Attempt; personalBest: boolean; reward: QuizReward };
 
 const LETTERS = ["A", "B", "C", "D"];
 const AUTO_ADVANCE_MS = 3000;
@@ -224,8 +225,9 @@ export function QuizPanel({
       questions: run.answers,
     };
     const personalBest = isPersonalBest(attempts, attempt);
+    const reward = rewardQuiz(attempt);
     onAttemptSaved(attempt);
-    setFinished({ attempt, personalBest });
+    setFinished({ attempt, personalBest, reward });
     setRun(null);
   }
 
@@ -246,7 +248,7 @@ export function QuizPanel({
 
   // ---------- Results ----------
   if (finished) {
-    const { attempt: done, personalBest } = finished;
+    const { attempt: done, personalBest, reward } = finished;
     const s = scoreAnswers(done.questions);
     const badges = [
       personalBest && { icon: "🏆", label: "Personal best" },
@@ -279,6 +281,12 @@ export function QuizPanel({
               </div>
               <div className="mt-1.5 text-sm text-muted-foreground">
                 {s.percent}% · {s.hintsUsed} hint{s.hintsUsed === 1 ? "" : "s"} used
+              </div>
+              <div className="mt-1 text-sm font-medium" aria-live="polite">
+                <span className="font-mono">+{reward.coins} 🪙</span>
+                <span className="text-muted-foreground">
+                  {" "}· {reward.streak}-day streak (+{reward.boostPercent}% coins)
+                </span>
               </div>
             </div>
           </div>

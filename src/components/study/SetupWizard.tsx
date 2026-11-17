@@ -11,6 +11,8 @@ import {
   type Subject,
 } from "@/lib/study-config";
 import { searchTopics } from "@/lib/topic-search";
+import { bestAttempt } from "@/lib/gamification";
+import type { Attempt } from "@/lib/quiz-utils";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -45,10 +47,12 @@ const QUESTIONS = ["What do you want to study?", "Which grade are you in?", "Wha
 
 export function SetupWizard({
   initial,
+  attempts = [],
   startStep = 0,
   onDone,
 }: {
   initial: Partial<StudySetup>;
+  attempts?: Attempt[];
   startStep?: WizardStep;
   onDone: (setup: StudySetup) => void;
 }) {
@@ -288,7 +292,17 @@ export function SetupWizard({
                         topic === t.name ? "animate-select border-ink ring-2 ring-tint" : "animate-rise border-border hover:bg-tint-soft",
                       )}
                     >
-                      <div className="font-medium">{t.name}</div>
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="font-medium">{t.name}</span>
+                        {(() => {
+                          const best = subject ? bestAttempt(attempts, subject, t.name) : null;
+                          return best ? (
+                            <span className="shrink-0 rounded-full bg-tint-soft px-2 py-0.5 font-mono text-[0.7rem] font-semibold" title="Your best score">
+                              Best: {best.correct}/{best.total}
+                            </span>
+                          ) : null;
+                        })()}
+                      </div>
                       <div className="text-sm text-muted-foreground">{t.blurb}</div>
                     </button>
                   ))}
