@@ -1,4 +1,4 @@
-import { QUIZ_LENGTH, type Difficulty, type Grade, type QuizQuestion, type Subject } from "./study-config";
+import type { Difficulty, Grade, QuizQuestion, Subject } from "./study-config";
 
 export type AnsweredQuestion = {
   question: string;
@@ -137,10 +137,4 @@ export function toFeedbackPayload(attempts: Attempt[], limit = 15) {
         usedHint: q.usedHint,
       })),
     }));
-}
-
-/** Keep a typed/slid quiz length inside 1–25 (whole numbers); junk falls back to the default. */
-export function clampQuizLength(value: number): number {
-  if (!Number.isFinite(value)) return QUIZ_LENGTH.default;
-  return Math.min(QUIZ_LENGTH.max, Math.max(QUIZ_LENGTH.min, Math.round(value)));
 }

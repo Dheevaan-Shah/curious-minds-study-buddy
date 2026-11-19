@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Atom, Calculator, Code2, Shuffle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,24 +10,7 @@ import {
   type StudySetup,
   type Subject,
 } from "@/lib/study-config";
-import { searchTopics } from "@/lib/topic-search";
-import { bestAttempt } from "@/lib/gamification";
-import type { Attempt } from "@/lib/quiz-utils";
 import { cn } from "@/lib/utils";
-import { ThemeToggle } from "./ThemeToggle";
-
-function Highlight({ text, query }: { text: string; query: string }) {
-  const i = text.toLowerCase().indexOf(query.trim().toLowerCase());
-  if (!query.trim() || i < 0) return <>{text}</>;
-  const end = i + query.trim().length;
-  return (
-    <>
-      {text.slice(0, i)}
-      <mark className="bg-tint-soft font-semibold text-foreground">{text.slice(i, end)}</mark>
-      {text.slice(end)}
-    </>
-  );
-}
 
 export type WizardStep = 0 | 1 | 2;
 
@@ -47,12 +30,10 @@ const QUESTIONS = ["What do you want to study?", "Which grade are you in?", "Wha
 
 export function SetupWizard({
   initial,
-  attempts = [],
   startStep = 0,
   onDone,
 }: {
   initial: Partial<StudySetup>;
-  attempts?: Attempt[];
   startStep?: WizardStep;
   onDone: (setup: StudySetup) => void;
 }) {
@@ -61,8 +42,6 @@ export function SetupWizard({
   const [grade, setGrade] = useState<Grade | null>(initial.grade ?? null);
   const [topic, setTopic] = useState(initial.topic ?? "");
   const inputRef = useRef<HTMLInputElement>(null);
-  const [listOpen, setListOpen] = useState(false);
-  const [active, setActive] = useState(-1);
   const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => () => {
@@ -88,37 +67,6 @@ export function SetupWizard({
     return matches;
   }, [subject, grade, topic]);
 
-  // Live dropdown: library topics that match what's typed (exact match hidden — it's already chosen)
-  const matches = useMemo(() => {
-    if (!subject || !grade) return [];
-    const q = topic.trim().toLowerCase();
-    return searchTopics(subject, grade, topic).filter((t) => t.name.toLowerCase() !== q);
-  }, [subject, grade, topic]);
-  const showList = listOpen && matches.length > 0;
-
-  function choose(name: string) {
-    setTopic(name);
-    setListOpen(false);
-    setActive(-1);
-  }
-
-  function onTopicKey(e: KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setListOpen(true);
-      setActive((a) => Math.min(a + 1, matches.length - 1));
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setActive((a) => Math.max(a - 1, -1));
-    } else if (e.key === "Enter" && showList && active >= 0 && matches[active]) {
-      e.preventDefault();
-      choose(matches[active].name);
-    } else if (e.key === "Escape") {
-      setListOpen(false);
-      setActive(-1);
-    }
-  }
-
   function surprise() {
     if (!subject || !grade) return;
     const list = TOPIC_SUGGESTIONS[subject][grade].filter((t) => t.name !== topic);
@@ -139,7 +87,6 @@ export function SetupWizard({
         <div className="font-display text-lg font-bold">
           Study Buddy<span className="text-tint">.</span>
         </div>
-        <div className="flex items-center gap-4">
         <div className="flex items-center gap-2" aria-label={`Step ${step + 1} of 3`}>
           {[0, 1, 2].map((i) => (
             <span
@@ -150,8 +97,6 @@ export function SetupWizard({
               )}
             />
           ))}
-        </div>
-        <ThemeToggle />
         </div>
       </div>
 
@@ -215,60 +160,15 @@ export function SetupWizard({
                 }}
                 className="flex flex-col gap-3 sm:flex-row"
               >
-                <div className="relative flex-1">
-                  <Input
-                    ref={inputRef}
-                    aria-label="Topic"
-                    role="combobox"
-                    aria-expanded={showList}
-                    aria-controls="topic-suggestions"
-                    aria-autocomplete="list"
-                    aria-activedescendant={showList && active >= 0 ? `topic-opt-${active}` : undefined}
-                    autoComplete="off"
-                    value={topic}
-                    maxLength={120}
-                    onChange={(e) => {
-                      setTopic(e.target.value);
-                      setListOpen(true);
-                      setActive(-1);
-                    }}
-                    onFocus={() => setListOpen(true)}
-                    onBlur={() => setListOpen(false)}
-                    onKeyDown={onTopicKey}
-                    placeholder="Type any topic, or pick one below"
-                    className="h-14 border-[1.5px] border-ink bg-card px-4 text-lg shadow-ink-sm focus-visible:ring-2 focus-visible:ring-tint"
-                  />
-                  {showList && (
-                    <ul
-                      id="topic-suggestions"
-                      role="listbox"
-                      aria-label="Matching topics"
-                      className="sheet animate-rise absolute inset-x-0 top-full z-30 mt-2 max-h-80 overflow-y-auto py-1"
-                    >
-                      {matches.map((t, i) => (
-                        <li key={`${t.grade}-${t.name}`} id={`topic-opt-${i}`} role="option" aria-selected={i === active}>
-                          <button
-                            type="button"
-                            tabIndex={-1}
-                            className="suggest-item"
-                            aria-selected={i === active}
-                            onMouseDown={(e) => e.preventDefault()}
-                            onMouseEnter={() => setActive(i)}
-                            onClick={() => choose(t.name)}
-                          >
-                            <span className="flex w-full items-center justify-between gap-2 font-medium">
-                              <span>
-                                <Highlight text={t.name} query={topic} />
-                              </span>
-                              {t.grade !== grade && <span className="label-mono shrink-0">Grade {t.grade}</span>}
-                            </span>
-                            <span className="text-sm text-muted-foreground">{t.blurb}</span>
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
+                <Input
+                  ref={inputRef}
+                  aria-label="Topic"
+                  value={topic}
+                  maxLength={120}
+                  onChange={(e) => setTopic(e.target.value)}
+                  placeholder="Type any topic, or pick one below"
+                  className="h-14 flex-1 border-[1.5px] border-ink bg-card px-4 text-lg shadow-ink-sm focus-visible:ring-2 focus-visible:ring-tint"
+                />
                 <Button type="button" variant="paper" className="h-14" onClick={surprise}>
                   <Shuffle /> Surprise me
                 </Button>
@@ -288,21 +188,11 @@ export function SetupWizard({
                       onClick={() => setTopic(t.name)}
                       style={{ animationDelay: `${i * 40}ms` }}
                       className={cn(
-                        "rounded-md border-[1.5px] bg-card p-3.5 text-left transition-all hover:-translate-y-0.5 hover:border-ink",
-                        topic === t.name ? "animate-select border-ink ring-2 ring-tint" : "animate-rise border-border hover:bg-tint-soft",
+                        "animate-rise rounded-md border-[1.5px] bg-card p-3.5 text-left transition-all hover:-translate-y-0.5 hover:border-ink hover:bg-tint-soft",
+                        topic === t.name ? "border-tint bg-tint-soft ring-2 ring-tint" : "border-border",
                       )}
                     >
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="font-medium">{t.name}</span>
-                        {(() => {
-                          const best = subject ? bestAttempt(attempts, subject, t.name) : null;
-                          return best ? (
-                            <span className="shrink-0 rounded-full bg-tint-soft px-2 py-0.5 font-mono text-[0.7rem] font-semibold" title="Your best score">
-                              Best: {best.correct}/{best.total}
-                            </span>
-                          ) : null;
-                        })()}
-                      </div>
+                      <div className="font-medium">{t.name}</div>
                       <div className="text-sm text-muted-foreground">{t.blurb}</div>
                     </button>
                   ))}

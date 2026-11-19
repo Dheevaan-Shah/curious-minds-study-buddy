@@ -100,8 +100,7 @@ export const generateSuggestions = createServerFn({ method: "POST" })
     const result = await generateJson({
       schemaName: "feedback_solutions",
       instructions: `You help the owner of "Study Buddy", a web app for grade 8-10 students. It explains Maths, Science and Computer Science topics simply, generates multiple-choice quizzes (easy/medium/hard) with hints, tracks scores on the device, and gives AI feedback on areas to develop.
-A student submitted app feedback. Write brief, actionable suggested resolutions for the admin. Be specific.
-Propose 2-3 concrete, different possible solutions the owner could make to the app.
+A student sent feedback. Propose 2-3 concrete, different possible solutions the owner could make to the app.
 - title: short action, max 10 words.
 - detail: 1-3 plain sentences on what to change and why it helps students.
 - effort: small, medium or large.

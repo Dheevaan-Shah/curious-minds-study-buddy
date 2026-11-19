@@ -84,8 +84,6 @@
   --color-tint: var(--tint);
   --color-tint-soft: var(--tint-soft);
   --shadow-ink-sm: var(--shadow-ink-sm-value);
-  --color-warn: var(--warn);
-  --color-warn-soft: var(--warn-soft);
 }
 
 :root {
@@ -142,125 +140,11 @@
   --cs-soft: oklch(0.955 0.03 75);
   --tint: var(--ink);
   --tint-soft: var(--muted);
-  /* "Review again" amber */
-  --warn: oklch(0.68 0.12 70);
-  --warn-soft: oklch(0.955 0.035 80);
-  /* Shop accents (soft, never neon) */
-  --accent-emerald: oklch(0.58 0.11 160);
-  --accent-emerald-soft: oklch(0.95 0.03 160);
-  --accent-royal: oklch(0.52 0.13 262);
-  --accent-royal-soft: oklch(0.945 0.03 262);
-  --accent-rose: oklch(0.6 0.13 10);
-  --accent-rose-soft: oklch(0.955 0.025 10);
-  --accent-violet: oklch(0.55 0.12 295);
-  --accent-violet-soft: oklch(0.95 0.03 295);
-  --accent-amber: oklch(0.66 0.12 60);
-  --accent-amber-soft: oklch(0.955 0.035 70);
-  --accent-navy: oklch(0.42 0.1 255);
-  --accent-navy-soft: oklch(0.94 0.025 255);
-  --accent-mint: oklch(0.66 0.09 175);
-  --accent-mint-soft: oklch(0.955 0.03 175);
-  --accent-crimson: oklch(0.52 0.15 22);
-  --accent-crimson-soft: oklch(0.95 0.03 22);
-  /* Background bubbles: extremely light warm tan */
-  --bubble: oklch(0.935 0.022 78);
-}
-
-.dark {
-  --paper: oklch(0.165 0 0);
-  --ink: oklch(0.94 0 0);
-  --grid: oklch(0.21 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: var(--ink);
-  --popover: oklch(0.22 0 0);
-  --popover-foreground: var(--ink);
-  --primary-foreground: oklch(0.15 0 0);
-  --secondary: oklch(0.27 0 0);
-  --muted: oklch(0.25 0 0);
-  --muted-foreground: oklch(0.7 0 0);
-  --accent: oklch(0.32 0 0);
-  --destructive: oklch(0.7 0 0);
-  --destructive-foreground: oklch(0.15 0 0);
-  --border: oklch(0.36 0 0);
-  --input: oklch(0.4 0 0);
-  --sidebar: oklch(0.19 0 0);
-  --sidebar-primary-foreground: oklch(0.15 0 0);
-  --sidebar-accent: oklch(0.26 0 0);
-  --sidebar-border: oklch(0.36 0 0);
-  --shadow-ink-value: 4px 4px 0 0 oklch(0.46 0 0);
-  --shadow-ink-sm-value: 2px 2px 0 0 oklch(0.46 0 0);
-  --success: oklch(0.72 0.14 152);
-  --success-soft: oklch(0.29 0.05 152);
-  --danger: oklch(0.7 0.15 25);
-  --danger-soft: oklch(0.29 0.055 25);
-  --warn: oklch(0.78 0.12 75);
-  --warn-soft: oklch(0.3 0.05 75);
-  --maths: oklch(0.74 0.09 255);
-  --maths-soft: oklch(0.27 0.035 255);
-  --science: oklch(0.74 0.08 170);
-  --science-soft: oklch(0.27 0.035 170);
-  --cs: oklch(0.78 0.1 70);
-  --cs-soft: oklch(0.29 0.04 70);
-  --accent-emerald: oklch(0.74 0.11 160);
-  --accent-emerald-soft: oklch(0.28 0.04 160);
-  --accent-royal: oklch(0.72 0.12 262);
-  --accent-royal-soft: oklch(0.28 0.05 262);
-  --accent-rose: oklch(0.75 0.12 10);
-  --accent-rose-soft: oklch(0.29 0.045 10);
-  --accent-violet: oklch(0.73 0.12 295);
-  --accent-violet-soft: oklch(0.28 0.05 295);
-  --accent-amber: oklch(0.8 0.11 70);
-  --accent-amber-soft: oklch(0.3 0.05 70);
-  --accent-navy: oklch(0.7 0.1 255);
-  --accent-navy-soft: oklch(0.26 0.045 255);
-  --accent-mint: oklch(0.8 0.09 175);
-  --accent-mint-soft: oklch(0.28 0.04 175);
-  --accent-crimson: oklch(0.7 0.14 22);
-  --accent-crimson-soft: oklch(0.29 0.055 22);
-  --bubble: oklch(0.235 0.014 70);
 }
 
 [data-subject="math"] { --tint: var(--maths); --tint-soft: var(--maths-soft); }
 [data-subject="science"] { --tint: var(--science); --tint-soft: var(--science-soft); }
 [data-subject="cs"] { --tint: var(--cs); --tint-soft: var(--cs-soft); }
-
-/* Equipped shop accent wins over the subject tint */
-html[data-accent="emerald"], html[data-accent="emerald"] [data-subject] { --tint: var(--accent-emerald); --tint-soft: var(--accent-emerald-soft); }
-html[data-accent="royal"], html[data-accent="royal"] [data-subject] { --tint: var(--accent-royal); --tint-soft: var(--accent-royal-soft); }
-html[data-accent="rose"], html[data-accent="rose"] [data-subject] { --tint: var(--accent-rose); --tint-soft: var(--accent-rose-soft); }
-html[data-accent="violet"], html[data-accent="violet"] [data-subject] { --tint: var(--accent-violet); --tint-soft: var(--accent-violet-soft); }
-html[data-accent="amber"], html[data-accent="amber"] [data-subject] { --tint: var(--accent-amber); --tint-soft: var(--accent-amber-soft); }
-html[data-accent="navy"], html[data-accent="navy"] [data-subject] { --tint: var(--accent-navy); --tint-soft: var(--accent-navy-soft); }
-html[data-accent="mint"], html[data-accent="mint"] [data-subject] { --tint: var(--accent-mint); --tint-soft: var(--accent-mint-soft); }
-html[data-accent="crimson"], html[data-accent="crimson"] [data-subject] { --tint: var(--accent-crimson); --tint-soft: var(--accent-crimson-soft); }
-
-/* Rainbow Mode: the accent hue glides around the colour wheel, shifting every second */
-@property --rainbow-hue {
-  syntax: "<number>";
-  inherits: true;
-  initial-value: 0;
-}
-@keyframes rainbow-hue {
-  from { --rainbow-hue: 0; }
-  to { --rainbow-hue: 360; }
-}
-html[data-accent="rainbow"] {
-  animation: rainbow-hue 24s linear infinite;
-}
-html[data-accent="rainbow"], html[data-accent="rainbow"] [data-subject] {
-  --tint: oklch(0.6 0.13 var(--rainbow-hue));
-  --tint-soft: oklch(0.95 0.035 var(--rainbow-hue));
-}
-html.dark[data-accent="rainbow"], html.dark[data-accent="rainbow"] [data-subject] {
-  --tint: oklch(0.76 0.12 var(--rainbow-hue));
-  --tint-soft: oklch(0.29 0.05 var(--rainbow-hue));
-}
-@utility rainbow-swatch {
-  background: conic-gradient(
-    oklch(0.7 0.13 0), oklch(0.7 0.13 60), oklch(0.7 0.13 120), oklch(0.7 0.13 180),
-    oklch(0.7 0.13 240), oklch(0.7 0.13 300), oklch(0.7 0.13 360)
-  );
-}
 
 @layer base {
   * {
@@ -354,9 +238,7 @@ html.dark[data-accent="rainbow"], html.dark[data-accent="rainbow"] [data-subject
   }
   &[data-state="selected"] {
     border-color: var(--ink);
-    background-color: var(--card);
     box-shadow: var(--shadow-ink-sm-value);
-    animation: select-flash 700ms ease-out;
   }
   &[data-state="correct"] {
     background-color: var(--success-soft);
@@ -427,37 +309,23 @@ html.dark[data-accent="rainbow"], html.dark[data-accent="rainbow"] [data-subject
   box-shadow: var(--shadow-ink-sm-value);
   cursor: pointer;
   transition: transform 140ms ease, box-shadow 140ms ease, background-color 160ms;
-  @media (hover: hover) {
-    &:hover {
-      transform: translate(-2px, -2px);
-      box-shadow: var(--shadow-ink-value);
-      background-color: var(--tint-soft);
-    }
+  &:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: var(--shadow-ink-value);
+    background-color: var(--tint-soft);
   }
   &:active {
     transform: translate(1px, 1px);
     box-shadow: none;
   }
-  /* Selected: brief tint flash, then settles back to plain white with a tint ring */
   &[aria-checked="true"] {
-    background-color: var(--card);
+    background-color: var(--tint-soft);
     box-shadow: 0 0 0 3px var(--tint), var(--shadow-ink-value);
-    animation: select-flash 700ms ease-out;
   }
   &:focus-visible {
     outline: 2px solid var(--ink);
     outline-offset: 3px;
   }
-}
-
-/* Selection feedback: a quick tint highlight that fades back to the card colour */
-@keyframes select-flash {
-  0% { background-color: var(--tint-soft); }
-  30% { background-color: var(--tint-soft); }
-  100% { background-color: var(--card); }
-}
-@utility animate-select {
-  animation: select-flash 700ms ease-out;
 }
 
 @keyframes step-in {
@@ -485,58 +353,3 @@ html.dark[data-accent="rainbow"], html.dark[data-accent="rainbow"] [data-subject
   animation: rise-in 280ms ease-out both;
 }
 
-
-/* Countdown bar for timed questions */
-@keyframes countdown {
-  from { transform: scaleX(1); }
-  to { transform: scaleX(0); }
-}
-@utility animate-countdown {
-  transform-origin: left center;
-  animation-name: countdown;
-  animation-timing-function: linear;
-  animation-fill-mode: forwards;
-}
-
-/* 3D flashcard */
-@utility flip-scene {
-  perspective: 1200px;
-}
-@utility flip-card {
-  position: relative;
-  transform-style: preserve-3d;
-  transition: transform 520ms cubic-bezier(0.2, 0.8, 0.2, 1);
-  &[data-flipped="true"] {
-    transform: rotateY(180deg);
-  }
-}
-@utility flip-face {
-  position: absolute;
-  inset: 0;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-@utility flip-back {
-  transform: rotateY(180deg);
-}
-
-/* Floating suggestion list under the topic search */
-@utility suggest-item {
-  display: flex;
-  width: 100%;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 0.6rem 0.9rem;
-  text-align: left;
-  cursor: pointer;
-  &[aria-selected="true"] {
-    background-color: var(--tint-soft);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .animate-step, .animate-rise, .animate-float, .flash-success, .flash-danger, .animate-select { animation: none !important; }
-  .option-card, .tile { animation: none !important; }
-  .flip-card { transition: none; }
-  html[data-accent="rainbow"] { animation-duration: 240s; }
-}
