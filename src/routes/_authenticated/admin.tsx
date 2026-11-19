@@ -62,8 +62,10 @@ function AdminPage() {
   async function refreshNow() {
     if (refreshing) return;
     setRefreshing(true);
+    // Keep the spin visible even when the server answers instantly.
+    const minSpin = new Promise((resolve) => setTimeout(resolve, 800));
     try {
-      await queryClient.invalidateQueries({ queryKey: ["admin-feedback"] });
+      await Promise.all([queryClient.invalidateQueries({ queryKey: ["admin-feedback"] }), minSpin]);
       toast.success("Feedback list is up to date.");
     } catch {
       toast.error("Couldn't refresh the feedback list.");
