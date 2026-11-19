@@ -57,6 +57,21 @@ function AdminPage() {
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["admin-feedback"] });
 
+  const [refreshing, setRefreshing] = useState(false);
+
+  async function refreshNow() {
+    if (refreshing) return;
+    setRefreshing(true);
+    try {
+      await queryClient.invalidateQueries({ queryKey: ["admin-feedback"] });
+      toast.success("Feedback list is up to date.");
+    } catch {
+      toast.error("Couldn't refresh the feedback list.");
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
   const suggest = useMutation({
     mutationFn: (feedbackId: string) => generateSuggestions({ data: { feedbackId } }),
     onSuccess: (r) => {
@@ -134,10 +149,12 @@ function AdminPage() {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={refresh}
-              className="label-mono inline-flex items-center gap-1 underline-offset-4 hover:text-foreground hover:underline"
+              onClick={refreshNow}
+              disabled={refreshing}
+              className="label-mono inline-flex items-center gap-1 underline-offset-4 hover:text-foreground hover:underline disabled:opacity-60"
             >
-              <RefreshCw className="size-3" /> Refresh
+              <RefreshCw className={cn("size-3", refreshing && "animate-spin")} />
+              {refreshing ? "Refreshing" : "Refresh"}
             </button>
             <button
               type="button"
