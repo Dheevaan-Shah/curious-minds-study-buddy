@@ -41,6 +41,7 @@ export function SetupWizard({
   const [subject, setSubject] = useState<Subject | null>(initial.subject ?? null);
   const [grade, setGrade] = useState<Grade | null>(initial.grade ?? null);
   const [topic, setTopic] = useState(initial.topic ?? "");
+  const [showAll, setShowAll] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -181,7 +182,7 @@ export function SetupWizard({
                     : `Popular in grade ${grade}`}
                 </div>
                 <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
-                  {suggestions.map((t, i) => (
+                  {(showAll || topic.trim() ? suggestions : suggestions.slice(0, 12)).map((t, i) => (
                     <button
                       key={t.name}
                       type="button"
@@ -197,6 +198,11 @@ export function SetupWizard({
                     </button>
                   ))}
                 </div>
+                {!topic.trim() && suggestions.length > 12 && (
+                  <Button type="button" variant="ghost" className="mt-3" onClick={() => setShowAll((v) => !v)}>
+                    {showAll ? "Show fewer" : `Show all ${suggestions.length} topics`}
+                  </Button>
+                )}
               </div>
             </div>
           )}
